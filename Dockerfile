@@ -41,27 +41,23 @@ WORKDIR $WORKSPACE_DIR
 # Copy repository contents to holosoma
 COPY . ./holosoma
 
-##### Create wrapper script to handle setup scripts
-##### Overrides sudo commands within those
-RUN cat > /tmp/run_setup.sh << 'EOF'
-#!/bin/bash
-set -e
-
-# Override sudo since it doesn't work in docker build
-function sudo() { "$@"; }
-export -f sudo
-
-# Set up conda environment
-source $CONDA_ROOT/etc/profile.d/conda.sh
-
-cd /workspace/holosoma/scripts
-chmod +x setup_isaacsim.sh setup_isaacgym.sh setup_mujoco.sh setup_inference.sh setup_retargeting.sh
-./setup_isaacsim.sh
-./setup_isaacgym.sh
-./setup_mujoco.sh --no-warp
-./setup_inference.sh
-./setup_retargeting.sh
-EOF
+RUN printf '#!/bin/bash\n\
+set -e\n\
+\n\
+# Override sudo since it doesn'\''t work in docker build\n\
+function sudo() { "$@"; }\n\
+export -f sudo\n\
+\n\
+# Set up conda environment\n\
+source $CONDA_ROOT/etc/profile.d/conda.sh\n\
+\n\
+cd /workspace/holosoma/scripts\n\
+chmod +x setup_isaacsim.sh setup_isaacgym.sh setup_mujoco.sh setup_inference.sh setup_retargeting.sh\n\
+./setup_isaacsim.sh\n\
+./setup_isaacgym.sh\n\
+./setup_mujoco.sh --no-warp\n\
+./setup_inference.sh\n\
+./setup_retargeting.sh\n' > /tmp/run_setup.sh
 
 ##### Make wrapper executable and run setup
 RUN chmod +x /tmp/run_setup.sh && \
